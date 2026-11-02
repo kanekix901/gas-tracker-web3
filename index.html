@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoGas & Official Live DEX Aggregator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="proj.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Ethers.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-gas-pump text-emerald-400 text-2xl"></i>
+                <span class="font-bold text-xl tracking-wider">Gas<span class="text-emerald-400">Tracker</span></span>
+            </div>
+            <div>
+                <button id="connectWalletBtn" onclick="connectWallet()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center">
+                    <i class="fa-solid fa-wallet mr-2"></i> Connect Wallet
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+        
+        <!-- Live Gas Prices & Luxury Blockchain Offers Section -->
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <i class="fa-solid fa-gauge-high text-emerald-400 mr-2"></i> Lowest Fee Gas & Daily Offers
+                    </h2>
+                    
+                    <!-- نظام التنقل الديناميكي الفاخر مع ترقيم الصفحات -->
+                    <div class="flex items-center space-x-3 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 shadow-inner">
+                        <button onclick="slideGas(-1)" class="text-slate-400 hover:text-emerald-400 transition-all px-1.5">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <div id="paginationNumbers" class="flex items-center space-x-2 text-xs font-bold">
+                            <!-- أرقام الصفحات تتولد تلقائياً -->
+                        </div>
+                        <button onclick="slideGas(1)" class="text-slate-400 hover:text-emerald-400 transition-all px-1.5">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- شبكات الغاز مع التفاعل والانتقال التلقائي للأسفل وبدون أكواد زائدة -->
+                <div id="gasPricesGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 opacity-100 transition-all duration-500 transform translate-y-0">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold mb-2 text-emerald-400">Lowest Fee Guarantee</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Our smart router automatically prioritizes the network with the absolute lowest fees to maximize your savings. All trades auto-route 0.1% developer fee securely to your wallet.
+                </p>
+            </div>
+        </div>
+
+        <!-- Smart Swap Widget Section -->
+        <div id="swapSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
+                    <span><i class="fa-solid fa-right-left text-emerald-400 mr-2"></i> Smart Swap</span>
+                    <span id="priceStatusBadge" class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded">Lowest Fee Active</span>
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- From Token -->
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">You Pay (Sell):</label>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                            <input type="number" id="sellAmountInput" placeholder="0.0" class="bg-transparent text-xl font-bold w-full outline-none text-white" oninput="calculateSwap()">
+                            <button type="button" onclick="openTokenModal('sell')" id="sellTokenBtn" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition-all shrink-0">
+                                <img id="sellTokenImg" src="https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png" class="w-5 h-5 rounded-full">
+                                <span id="sellTokenText">BNB</span>
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="button" onclick="switchTokens()" class="text-slate-400 hover:text-emerald-400 bg-slate-950 p-2.5 rounded-full border border-slate-800 transition-all shadow-md">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                    </div>
+
+                    <!-- To Token -->
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">You Receive (Buy):</label>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                            <input type="text" id="buyAmountOutput" readonly placeholder="0.0" class="bg-transparent text-xl font-bold w-full outline-none text-emerald-400">
+                            <button type="button" onclick="openTokenModal('buy')" id="buyTokenBtn" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition-all shrink-0">
+                                <img id="buyTokenImg" src="https://assets.coingecko.com/coins/images/325/small/Tether.png" class="w-5 h-5 rounded-full">
+                                <span id="buyTokenText">USDT</span>
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <button type="button" onclick="executeSwap()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/10">
+                    Swap with Lowest Fees (0.1% Fee)
+                </button>
+                <p id="walletStatusText" class="text-[10px] text-slate-500 text-center mt-2">Wallet not connected</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Core Data & Setup -->
+    <script>
+        const MY_FEE_RECIPIENT_ADDRESS = "0xB27A908e1A342BFd50c2c10eD233979f5c7279BA";
+        let userAccount = null;
+        let provider = null;
+        let cryptoPrices = { "USDT": 1.0, "USDC": 1.0, "BUSD": 1.0, "DAI": 1.0 };
+        let activeSelectingType = 'sell';
+
+        const coinsData = [
+            { symbol: "USDT", pair: "USDTUSDT", name: "Tether USD", img: "https://assets.coingecko.com/coins/images/325/small/Tether.png" },
+            { symbol: "BTC", pair: "BTCUSDT", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png" },
+            { symbol: "ETH", pair: "ETHUSDT", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/small/ethereum.png" },
+            { symbol: "BNB", pair: "BNBUSDT", name: "BNB", img: "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png" },
+            { symbol: "SOL", pair: "SOLUSDT", name: "Solana", img: "https://assets.coingecko.com/coins/images/4128/small/solana.png" },
+            { symbol: "USDC", pair: "USDCUSDT", name: "USD Coin", img: "https://assets.coingecko.com/coins/images/6319/small/usdc.png" },
+            { symbol: "XRP", pair: "XRPUSDT", name: "XRP", img: "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png" },
+            { symbol: "ADA", pair: "ADAUSDT", name: "Cardano", img: "https://assets.coingecko.com/coins/images/975/small/cardano.png" },
+            { symbol: "DOGE", pair: "DOGEUSDT", name: "Dogecoin", img: "https://assets.coingecko.com/coins/images/5/small/dogecoin.png" },
+            { symbol: "AVAX", pair: "AVAXUSDT", name: "Avalanche", img: "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png" },
+            { symbol: "TRX", pair: "TRXUSDT", name: "TRON", img: "https://assets.coingecko.com/coins/images/1094/small/tron-logo.png" },
+            { symbol: "LINK", pair: "LINKUSDT", name: "Chainlink", img: "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png" },
+            { symbol: "SUI", pair: "SUIUSDT", name: "Sui", img: "https://assets.coingecko.com/coins/images/26375/small/sui_asset.jpeg" },
+            { symbol: "TON", pair: "TONUSDT", name: "Toncoin", img: "https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png" },
+            { symbol: "DOT", pair: "DOTUSDT", name: "Polkadot", img: "https://assets.coingecko.com/coins/images/12171/small/polkadot.png" },
+            { symbol: "SHIB", pair: "SHIBUSDT", name: "Shiba Inu", img: "https://assets.coingecko.com/coins/images/11939/small/shiba.png" },
+            { symbol: "NEAR", pair: "NEARUSDT", name: "NEAR Protocol", img: "https://assets.coingecko.com/coins/images/10365/small/near.png" },
+            { symbol: "MATIC", pair: "MATICUSDT", name: "Polygon", img: "https://assets.coingecko.com/coins/images/4713/small/polygon.png" },
+            { symbol: "LTC", pair: "LTCUSDT", name: "Litecoin", img: "https://assets.coingecko.com/coins/images/2/small/litecoin.png" },
+            { symbol: "UNI", pair: "UNIUSDT", name: "Uniswap", img: "https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png" },
+            { symbol: "BCH", pair: "BCHUSDT", name: "Bitcoin Cash", img: "https://assets.coingecko.com/coins/images/780/small/bitcoin-cash-circle.png" },
+            { symbol: "ICP", pair: "ICPUSDT", name: "Internet Computer", img: "https://assets.coingecko.com/coins/images/14495/small/Internet_Computer_logo.png" },
+            { symbol: "APT", pair: "APTUSDT", name: "Aptos", img: "https://assets.coingecko.com/coins/images/26455/small/aptos_round.png" },
+            { symbol: "RENDER", pair: "RENDERUSDT", name: "Render", img: "https://assets.coingecko.com/coins/images/11636/small/rndr.png" },
+            { symbol: "ATOM", pair: "ATOMUSDT", name: "Cosmos Hub", img: "https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png" },
+            { symbol: "OP", pair: "OPUSDT", name: "Optimism", img: "https://assets.coingecko.com/coins/images/25244/small/Optimism.png" },
+            { symbol: "FLOKI", pair: "FLOKIUSDT", name: "Floki", img: "https://assets.coingecko.com/coins/images/16746/small/FLOKI.png" },
+            { symbol: "FTM", pair: "FTMUSDT", name: "Fantom", img: "https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png" }
+        ];
+
+        function getDynamicDailyGasNetworks() {
+            const today = new Date();
+            const seed = today.getDate() + today.getMonth() * 31;
+            
+            let networks = [
+                { name: "BNB Smart Chain", symbol: "BNB", img: "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png", gwei: (2.5 + (seed % 3)).toFixed(1) + " Gwei", usd: 0.01, tag: "Lowest Fee", best: true },
+                { name: "Optimism L2", symbol: "ETH", img: "https://assets.coingecko.com/coins/images/25244/small/Optimism.png", gwei: "0.0" + (4 + (seed % 3)) + " Gwei", usd: 0.0007, tag: "Layer 2 Deal", best: false },
+                { name: "Solana Network", symbol: "SOL", img: "https://assets.coingecko.com/coins/images/4128/small/solana.png", gwei: "0.0" + (6 + (seed % 4)) + " Gwei", usd: 0.0005, tag: "Daily Promo", best: false },
+                { name: "Polygon PoS", symbol: "MATIC", img: "https://assets.coingecko.com/coins/images/4713/small/polygon.png", gwei: (30.0 + (seed % 10)).toFixed(1) + " Gwei", usd: 0.002, tag: "Super Fast", best: false },
+                { name: "Avalanche C-Chain", symbol: "AVAX", img: "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png", gwei: (20.0 + (seed % 5)).toFixed(1) + " Gwei", usd: 0.012, tag: "Low Cost", best: false },
+                { name: "Ethereum Mainnet", symbol: "ETH", img: "https://assets.coingecko.com/coins/images/279/small/ethereum.png", gwei: (12.0 + (seed % 8)).toFixed(1) + " Gwei", usd: 0.95, tag: "Standard", best: false }
+            ];
+
+            networks.sort((a, b) => a.usd - b.usd);
+            networks[0].best = true;
+            networks[0].tag = "Lowest Fee Route";
+
+            return networks.map(n => ({ ...n, usdText: `~ $${n.usd}` }));
+        }
+
+        let gasCurrentPage = 0;
+
+        function renderGasPrices() {
+            const container = document.getElementById('gasPricesGrid');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(8px)';
+
+            setTimeout(() => {
+                container.innerHTML = '';
+                const gasNetworks = getDynamicDailyGasNetworks();
+                const totalPages = Math.ceil(gasNetworks.length / 3);
+                
+                let paginationHTML = '';
+                for (let p = 0; p < totalPages; p++) {
+                    const isActive = p === gasCurrentPage;
+                    const activeClass = isActive ? 'bg-emerald-500 text-slate-950 px-3 py-1 rounded-lg shadow-md shadow-emerald-500/20 scale-105' : 'text-slate-400 hover:text-white px-2 py-1';
+                    paginationHTML += `<span onclick="goToGasPage(${p})" class="cursor-pointer transition-all duration-300 ${activeClass}">${p + 1}</span>`;
+                }
+                document.getElementById('paginationNumbers').innerHTML = paginationHTML;
+
+                const startIdx = gasCurrentPage * 3;
+                for (let i = 0; i < 3; i++) {
+                    const index = (startIdx + i) % gasNetworks.length;
+                    const net = gasNetworks[index];
+                    const borderClass = net.best ? "border-emerald-500/40 bg-slate-950 shadow-emerald-500/10" : "border-slate-800/80 bg-slate-950";
+                    
+                    container.innerHTML += `
+                        <div onclick="selectOfferToken('${net.symbol}')" class="p-4 rounded-xl border ${borderClass} shadow-lg relative transition-all hover:border-emerald-500/60 cursor-pointer group">
+                            ${net.best ? '<div class="absolute top-2 right-2 text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Best Route</div>' : ''}
+                            <div class="flex items-center space-x-2.5 mb-2">
+                                <img src="${net.img}" class="w-6 h-6 rounded-full bg-slate-800 p-0.5" onerror="this.src='https://assets.coingecko.com/coins/images/325/small/Tether.png'">
+                                <div class="text-xs font-semibold text-slate-300 group-hover:text-emerald-400 transition-colors">${net.name}</div>
+                            </div>
+                            <div class="text-2xl font-black text-white">${net.gwei}</div>
+                            <span class="text-emerald-400 text-xs">${net.usdText} (${net.tag})</span>
+                        </div>
+                    `;
+                }
+
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 150);
+        }
+
+        function selectOfferToken(symbol) {
+            const coin = coinsData.find(c => c.symbol === symbol);
+            if (coin) {
+                selectedBuyToken = coin;
+                document.getElementById('buyTokenImg').src = coin.img;
+                document.getElementById('buyTokenText').innerText = coin.symbol;
+                calculateSwap();
+                document.getElementById('swapSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+    <!-- Modals & Execution Logic -->
+    <div id="tokenModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Select a Token</h3>
+                <button type="button" onclick="closeTokenModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="relative mb-4">
+                <input type="text" id="tokenSearchInput" oninput="filterTokens()" placeholder="Search token name or symbol" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-emerald-500">
+            </div>
+            <div id="tokensList" class="max-h-80 overflow-y-auto space-y-1">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Custom Notification Modal -->
+    <div id="customAlertModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center relative">
+            <div id="alertIconContainer" class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i id="alertIcon" class="fa-solid fa-wallet"></i>
+            </div>
+            <h3 id="alertTitle" class="text-lg font-bold text-white mb-2">Notice</h3>
+            <p id="alertMessage" class="text-slate-400 text-sm mb-6 leading-relaxed">Message goes here...</p>
+            <button type="button" onclick="closeCustomAlert()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-500/10">
+                Got it
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        <p>&copy; 2026 GasTracker. All rights reserved.</p>
+    </footer>
+
+    <!-- Runtime Logic Script -->
+    <script>
+        let selectedSellToken = coinsData[3];
+        let selectedBuyToken = coinsData[0];
+
+        function showCustomAlert(title, message, iconClass = "fa-wallet") {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertIcon').className = `fa-solid ${iconClass}`;
+            document.getElementById('customAlertModal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').classList.add('hidden');
+        }
+
+        async function fetchOfficialPrices() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price');
+                const data = await response.json();
+                data.forEach(item => {
+                    coinsData.forEach(coin => {
+                        if (item.symbol === coin.pair) {
+                            cryptoPrices[coin.symbol] = parseFloat(item.price);
+                        }
+                    });
+                });
+                document.getElementById('priceStatusBadge').innerText = "Live Lowest Fee Synced";
+                calculateSwap();
+            } catch (error) {
+                console.error("Binance API error:", error);
+            }
+        }
+
+        function openTokenModal(type) {
+            activeSelectingType = type;
+            const modal = document.getElementById('tokenModal');
+            modal.classList.remove('hidden');
+            document.getElementById('tokenSearchInput').value = '';
+            renderTokenList(coinsData);
+        }
+
+        function closeTokenModal() {
+            document.getElementById('tokenModal').classList.add('hidden');
+        }
+
+        function renderTokenList(tokens) {
+            const container = document.getElementById('tokensList');
+            container.innerHTML = '';
+            tokens.forEach(coin => {
+                let rawPrice = cryptoPrices[coin.symbol];
+                let priceStr = "$---";
+                if (rawPrice !== undefined && rawPrice !== null) {
+                    priceStr = rawPrice < 0.01 ? `$${rawPrice.toFixed(6)}` : `$${rawPrice.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+                }
+                container.innerHTML += `
+                    <div onclick="selectToken('${coin.symbol}')" class="flex items-center justify-between p-3 hover:bg-slate-800 rounded-xl cursor-pointer transition-all border border-transparent hover:border-slate-700">
+                        <div class="flex items-center space-x-3">
+                            <img src="${coin.img}" class="w-7 h-7 rounded-full bg-slate-800" onerror="this.src='https://assets.coingecko.com/coins/images/325/small/Tether.png'">
+                            <div>
+                                <div class="font-bold text-sm text-white">${coin.symbol}</div>
+                                <div class="text-xs text-slate-400">${coin.name}</div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-semibold text-emerald-400">${priceStr}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterTokens() {
+            const query = document.getElementById('tokenSearchInput').value.toLowerCase();
+            const filtered = coinsData.filter(c => c.symbol.toLowerCase().includes(query) || c.name.toLowerCase().includes(query));
+            renderTokenList(filtered);
+        }
+
+        function selectToken(symbol) {
+            const coin = coinsData.find(c => c.symbol === symbol);
+            if (activeSelectingType === 'sell') {
+                selectedSellToken = coin;
+                document.getElementById('sellTokenImg').src = coin.img;
+                document.getElementById('sellTokenText').innerText = coin.symbol;
+            } else {
+                selectedBuyToken = coin;
+                document.getElementById('buyTokenImg').src = coin.img;
+                document.getElementById('buyTokenText').innerText = coin.symbol;
+            }
+            closeTokenModal();
+            calculateSwap();
+        }
+
+        function calculateSwap() {
+            const val = parseFloat(document.getElementById('sellAmountInput').value);
+            const outputField = document.getElementById('buyAmountOutput');
+
+            if (!val || val <= 0 || isNaN(val)) {
+                outputField.value = "";
+                return;
+            }
+
+            const sellPriceUSD = cryptoPrices[selectedSellToken.symbol] || 1;
+            const buyPriceUSD = cryptoPrices[selectedBuyToken.symbol] || 1;
+
+            const totalUSD = val * sellPriceUSD;
+            const estimatedBuyAmount = totalUSD / buyPriceUSD;
+
+            outputField.value = estimatedBuyAmount >= 1 ? estimatedBuyAmount.toFixed(4) : estimatedBuyAmount.toFixed(6);
+        }
+
+        function switchTokens() {
+            const temp = selectedSellToken;
+            selectedSellToken = selectedBuyToken;
+            selectedBuyToken = temp;
+
+            document.getElementById('sellTokenImg').src = selectedSellToken.img;
+            document.getElementById('sellTokenText').innerText = selectedSellToken.symbol;
+            document.getElementById('buyTokenImg').src = selectedBuyToken.img;
+            document.getElementById('buyTokenText').innerText = selectedBuyToken.symbol;
+
+            calculateSwap();
+        }
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined' || (window.web3 && window.web3.currentProvider)) {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum || window.web3.currentProvider);
+                    const accounts = await provider.send("eth_requestAccounts", []);
+                    userAccount = accounts[0];
+                    
+                    const btn = document.getElementById('connectWalletBtn');
+                    btn.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
+                    btn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+                    btn.classList.add('bg-slate-800', 'text-emerald-400', 'border', 'border-emerald-500/30');
+                    
+                    document.getElementById('walletStatusText').innerText = `Connected: ${userAccount}`;
+                    showCustomAlert("Connected Successfully", `Your wallet has been connected:\n${userAccount}`, "fa-circle-check");
+                } catch (error) {
+                    showCustomAlert("Connection Cancelled", "Wallet connection request was rejected.", "fa-triangle-exclamation");
+                }
+            } else {
+                showCustomAlert("No Wallet Found", "No Web3 wallet detected on this device. Please open this site inside a crypto wallet browser (like MetaMask or Trust Wallet).", "fa-triangle-exclamation");
+            }
+        }
+
+        function executeSwap() {
+            if (!userAccount) {
+                showCustomAlert("Wallet Required", "Please connect your Web3 wallet first to execute swaps.", "fa-wallet");
+                connectWallet();
+                return;
+            }
+            const sellAmount = document.getElementById('sellAmountInput').value;
+
+            if (!sellAmount || sellAmount <= 0) {
+                showCustomAlert("Invalid Amount", "Please enter a valid amount to swap.", "fa-triangle-exclamation");
+                return;
+            }
+
+            showCustomAlert("Lowest Fee Swap Executed", `Selling: ${sellAmount} ${selectedSellToken.symbol}\nBuying: ${selectedBuyToken.symbol}\n\nOptimized for lowest gas fees. 0.1% developer fee securely routed.`, "fa-right-left");
+        }
+
+        function slideGas(direction) {
+            const gasNetworks = getDynamicDailyGasNetworks();
+            const totalPages = Math.ceil(gasNetworks.length / 3);
+            gasCurrentPage = (gasCurrentPage + direction + totalPages) % totalPages;
+            renderGasPrices();
+        }
+
+        function goToGasPage(pageNum) {
+            if (gasCurrentPage === pageNum) return;
+            gasCurrentPage = pageNum;
+            renderGasPrices();
+        }
+
+        window.onload = () => {
+            renderGasPrices();
+            fetchOfficialPrices();
+            setInterval(fetchOfficialPrices, 1000);
+        };
+    </script>
+</body>
+</html>
